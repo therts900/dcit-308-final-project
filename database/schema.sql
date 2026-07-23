@@ -1,0 +1,2 @@
+-- SQLite-compatible schema placeholder.
+-- Add tables for locations, roads, service_requests, resources, algorithm_runs, and audit_events.
