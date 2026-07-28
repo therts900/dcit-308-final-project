@@ -1,4 +1,3 @@
 package com.ug.smartcampus.algorithm.graph;
 
-/** Algorithm placeholder. */
-public final class Prim { private Prim() { } }
+import com.ug.smartcampus.datastructures.graph.Graph;import java.util.*;public final class Prim{private Prim(){}public static<T>List<Graph.Edge<T>> minimumSpanningTree(Graph<T>g,T start){List<Graph.Edge<T>>out=new ArrayList<>();Set<T>seen=new HashSet<>();PriorityQueue<Graph.Edge<T>>q=new PriorityQueue<>(Comparator.comparingDouble(Graph.Edge::weight));seen.add(start);for(var n:g.neighbors(start).entrySet())q.add(new Graph.Edge<>(start,n.getKey(),n.getValue()));while(!q.isEmpty()){var e=q.poll();if(!seen.add(e.to()))continue;out.add(e);for(var n:g.neighbors(e.to()).entrySet())if(!seen.contains(n.getKey()))q.add(new Graph.Edge<>(e.to(),n.getKey(),n.getValue()));}return out;}}

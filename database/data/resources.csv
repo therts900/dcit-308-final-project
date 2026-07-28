@@ -1,1 +1,6 @@
-id,name,resource_type,availability_status
+resource_id,name,type,capabilities,location_building_id
+1,Maintenance Team Alpha,Technician,Plumbing;general repairs,1
+2,ICT Support Unit,Technician,Audio visual;networking,2
+3,Campus Van 1,Vehicle,Transport;equipment hauling,3
+4,Electrical Team,Technician,Electrical;HVAC,4
+5,Campus Van 2,Vehicle,Transport;waste collection,5

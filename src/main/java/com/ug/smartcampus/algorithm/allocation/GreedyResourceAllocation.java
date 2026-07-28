@@ -1,4 +1,3 @@
 package com.ug.smartcampus.algorithm.allocation;
 
-/** Algorithm placeholder. */
-public final class GreedyResourceAllocation { private GreedyResourceAllocation() { } }
+import com.ug.smartcampus.model.*;import java.util.*;public final class GreedyResourceAllocation{private GreedyResourceAllocation(){}public static Map<Request,Resource> allocate(List<Request>requests,List<Resource>resources){List<Request>rs=new ArrayList<>(requests);rs.sort(Comparator.comparingInt(Request::getPriority).reversed().thenComparing(Request::getRequestedTime));Map<Request,Resource>out=new LinkedHashMap<>();Set<Resource>used=new HashSet<>();for(Request r:rs)for(Resource x:resources)if(!used.contains(x)&&x.getLocationBuildingId()==r.getBuildingId()){out.put(r,x);used.add(x);break;}return out;}}
