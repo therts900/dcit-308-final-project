@@ -1,4 +1,3 @@
 package com.ug.smartcampus.algorithm.graph;
 
-/** Algorithm placeholder. */
-public final class DepthFirstSearch { private DepthFirstSearch() { } }
+import com.ug.smartcampus.datastructures.graph.Graph;import java.util.*;public final class DepthFirstSearch{private DepthFirstSearch(){}public static<T>List<T> traverse(Graph<T>g,T start){List<T> out=new ArrayList<>();Set<T> seen=new HashSet<>();ArrayDeque<T>s=new ArrayDeque<>();s.push(start);while(!s.isEmpty()){T v=s.pop();if(!seen.add(v))continue;out.add(v);List<T> n=new ArrayList<>(g.neighbors(v).keySet());Collections.reverse(n);for(T x:n)s.push(x);}return out;}public static<T>boolean reachable(Graph<T>g,T from,T to){return traverse(g,from).contains(to);}}

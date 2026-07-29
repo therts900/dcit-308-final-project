@@ -1,4 +1,5 @@
 package com.ug.smartcampus.datastructures.graph;
 
-/** Data-structure placeholder. */
-public class Graph<T> { }
+import java.util.*;
+public class Graph<T>{public static final class Edge<E>{private final E from,to;private final double weight;public Edge(E f,E t,double w){from=f;to=t;weight=w;}public E from(){return from;}public E to(){return to;}public double weight(){return weight;}}
+ private final Map<T,Map<T,Double>> adj=new LinkedHashMap<>();private final boolean directed;public Graph(){this(false);}public Graph(boolean directed){this.directed=directed;}public void addVertex(T v){adj.putIfAbsent(v,new LinkedHashMap<>());}public void addEdge(T from,T to,double weight){if(weight<0)throw new IllegalArgumentException("Edge weight must be non-negative");addVertex(from);addVertex(to);adj.get(from).put(to,weight);if(!directed)adj.get(to).put(from,weight);}public Set<T> vertices(){return Collections.unmodifiableSet(adj.keySet());}public Map<T,Double> neighbors(T v){return Collections.unmodifiableMap(adj.getOrDefault(v,Map.of()));}public List<Edge<T>> edges(){List<Edge<T>> out=new ArrayList<>();Set<String> seen=new HashSet<>();for(var e:adj.entrySet())for(var x:e.getValue().entrySet()){String key=e.getKey()+"|"+x.getKey();String reverse=x.getKey()+"|"+e.getKey();if(directed||seen.add(key)&&!seen.contains(reverse)){out.add(new Edge<>(e.getKey(),x.getKey(),x.getValue()));}}return out;}public boolean isDirected(){return directed;}}
