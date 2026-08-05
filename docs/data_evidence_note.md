@@ -1,8 +1,8 @@
 # Dataset Evidence Note — Smart Campus Service Operations Optimizer
 
-**Prepared by:** [Your Name], [Index Number] — Level 200 (DCIT 204) data-collection sub-team
-**Group:** [Group name / number]
-**Date:** [Date]
+**Prepared by:** Apedo Godwin Mawulie Yaw, 22375204 — Level 200 (DCIT 204) data-collection sub-team
+**Group:** Tech-Intellectuals
+**Date:** 05/08/2026
 **Campus modelled:** University of Ghana, Legon
 
 ## What the dataset contains
