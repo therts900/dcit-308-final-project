@@ -1,1 +1,49 @@
-id,name,latitude,longitude
+location_id,name,area,location_type,x_coord,y_coord
+L001,Balme Library,Central,Library,5.6503,0.1864
+L002,Great Hall,Central,Landmark,5.6514,0.1857
+L003,Main Administration (Registry),Central,Admin,5.6494,0.1873
+L004,Council Chamber,Central,Admin,5.6497,0.1868
+L005,Department of Computer Science,Science,Academic,5.6521,0.1891
+L006,Department of Mathematics,Science,Academic,5.6524,0.1896
+L007,Department of Physics,Science,Academic,5.6528,0.19
+L008,Department of Chemistry,Science,Academic,5.6532,0.1904
+L009,Department of Statistics,Science,Academic,5.6519,0.1886
+L010,Biological Sciences Block,Science,Academic,5.6535,0.1898
+L011,Noguchi Memorial Institute,Health,Research,5.6566,0.1882
+L012,Jones Quartey Building (JQB),Humanities,Academic,5.6506,0.1842
+L013,N Block,Humanities,Academic,5.6501,0.1837
+L014,New N Block (NNB),Humanities,Academic,5.6499,0.1833
+L015,Department of Economics,Humanities,Academic,5.651,0.1846
+L016,Institute of African Studies,Humanities,Academic,5.6515,0.1841
+L017,School of Communication Studies,Humanities,Academic,5.6505,0.183
+L018,University of Ghana Business School,Business,Academic,5.6485,0.1846
+L019,School of Law,Humanities,Academic,5.649,0.1839
+L020,ISSER,Humanities,Research,5.6512,0.1826
+L021,Commonwealth Hall,Halls,Residence,5.6524,0.186
+L022,Legon Hall,Halls,Residence,5.6508,0.1875
+L023,Akuafo Hall,Halls,Residence,5.6519,0.1878
+L024,Volta Hall,Halls,Residence,5.6528,0.1871
+L025,Mensah Sarbah Hall,Halls,Residence,5.6479,0.1886
+L026,Hilla Limann Hall,Halls,Residence,5.6557,0.1918
+L027,Alexander Kwapong Hall,Halls,Residence,5.6562,0.1927
+L028,Elizabeth Frances Sey Hall,Halls,Residence,5.6568,0.1932
+L029,Jean Nelson Aka Hall,Halls,Residence,5.6573,0.1923
+L030,International Students Hostel,Halls,Residence,5.6548,0.1909
+L031,Valco Trust Hostel,Halls,Residence,5.6541,0.1914
+L032,Pentagon Hostel,Commercial,Residence,5.6593,0.1945
+L033,Evandy Hostel,Commercial,Residence,5.6598,0.195
+L034,Bani Hostel,Commercial,Residence,5.6589,0.194
+L035,Central Cafeteria,Central,Dining,5.6487,0.1878
+L036,Night Market,Commercial,Market,5.6474,0.1893
+L037,Bush Canteen,Commercial,Dining,5.6496,0.1824
+L038,Banking Square,Commercial,Banking,5.6483,0.186
+L039,UG Post Office,Central,Services,5.6488,0.1864
+L040,UG Bookshop,Central,Services,5.6492,0.1859
+L041,UG Hospital,Health,Health,5.6571,0.1832
+L042,Legon Pharmacy,Health,Health,5.6564,0.1837
+L043,UG Sports Stadium,Sports,Sports,5.6463,0.1873
+L044,Athletic Oval,Sports,Sports,5.6458,0.1864
+L045,Sarbah Park,Halls,OpenSpace,5.6476,0.188
+L046,Main Gate (Okponglo),Gate,Transport,5.6445,0.185
+L047,Diaspora Gate,Gate,Transport,5.6584,0.1958
+L048,Shuttle Terminal,Central,Transport,5.6485,0.1869
