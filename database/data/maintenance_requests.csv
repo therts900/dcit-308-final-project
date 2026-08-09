@@ -1,0 +1,6 @@
+request_id,description,requester,priority,status,building_id,requested_time,department
+1,Repair leaking tap,Ama Mensah,4,OPEN,1,2026-07-01T08:30:00,Estates
+2,Replace faulty projector,Kwame Owusu,3,ASSIGNED,2,2026-07-01T09:15:00,ICT
+3,Clear blocked drainage,Akosua Boateng,5,OPEN,3,2026-07-02T10:00:00,Estates
+4,Service air conditioner,Yaw Asante,2,IN_PROGRESS,4,2026-07-02T13:45:00,Engineering
+5,Repair damaged door,Efua Sarpong,3,CLOSED,5,2026-07-03T11:20:00,Security
