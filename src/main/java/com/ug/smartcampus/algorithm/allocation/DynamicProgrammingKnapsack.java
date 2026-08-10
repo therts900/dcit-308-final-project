@@ -1,4 +1,3 @@
 package com.ug.smartcampus.algorithm.allocation;
 
-/** Algorithm placeholder. */
-public final class DynamicProgrammingKnapsack { private DynamicProgrammingKnapsack() { } }
+import java.util.*;public final class DynamicProgrammingKnapsack{private DynamicProgrammingKnapsack(){}public static List<Integer> select(int[]values,int[]costs,int capacity){if(values.length!=costs.length)throw new IllegalArgumentException();int n=values.length;int[][]dp=new int[n+1][capacity+1];for(int i=1;i<=n;i++)for(int c=0;c<=capacity;c++)dp[i][c]=costs[i-1]<=c?Math.max(dp[i-1][c],dp[i-1][c-costs[i-1]]+values[i-1]):dp[i-1][c];List<Integer>out=new ArrayList<>();for(int i=n,c=capacity;i>0;i--)if(dp[i][c]!=dp[i-1][c]){out.add(i-1);c-=costs[i-1];}Collections.reverse(out);return out;}public static int maxValue(int[]v,int[]c,int capacity){return select(v,c,capacity).stream().mapToInt(i->v[i]).sum();}}

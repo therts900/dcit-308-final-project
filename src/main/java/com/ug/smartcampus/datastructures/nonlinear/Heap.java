@@ -1,4 +1,4 @@
 package com.ug.smartcampus.datastructures.nonlinear;
 
-/** Data-structure placeholder. */
-public class Heap<T> { }
+import java.util.ArrayList; import java.util.Comparator;
+public class Heap<T>{private final ArrayList<T> a=new ArrayList<>();private final Comparator<? super T> cmp;public Heap(Comparator<? super T> c){cmp=c;}public void add(T v){a.add(v);up(a.size()-1);}public T peek(){if(a.isEmpty())return null;return a.get(0);}public T poll(){if(a.isEmpty())return null;T r=a.get(0),x=a.remove(a.size()-1);if(!a.isEmpty()){a.set(0,x);down(0);}return r;}public int size(){return a.size();}public boolean isEmpty(){return a.isEmpty();}private void up(int i){while(i>0){int p=(i-1)/2;if(cmp.compare(a.get(i),a.get(p))>=0)break;swap(i,p);i=p;}}private void down(int i){for(;;){int l=i*2+1,r=l+1,b=i;if(l<a.size()&&cmp.compare(a.get(l),a.get(b))<0)b=l;if(r<a.size()&&cmp.compare(a.get(r),a.get(b))<0)b=r;if(b==i)return;swap(i,b);i=b;}}private void swap(int i,int j){T x=a.get(i);a.set(i,a.get(j));a.set(j,x);}}
