@@ -16,6 +16,8 @@
         <junit.version>5.11.4</junit.version>
         <sqlite.version>3.47.1.0</sqlite.version>
         <postgresql.version>42.7.5</postgresql.version>
+        <flatlaf.version>3.2.1</flatlaf.version>
+        <miglayout.version>11.4.3</miglayout.version>
     </properties>
 
     <dependencies>
@@ -35,6 +37,18 @@
             <artifactId>junit-jupiter</artifactId>
             <version>${junit.version}</version>
             <scope>test</scope>
+        </dependency>
+        <!-- Modern dark/light themes for Swing -->
+        <dependency>
+            <groupId>com.formdev</groupId>
+            <artifactId>flatlaf</artifactId>
+            <version>${flatlaf.version}</version>
+        </dependency>
+        <!-- Advanced grid layout manager -->
+        <dependency>
+            <groupId>com.miglayout</groupId>
+            <artifactId>miglayout-swing</artifactId>
+            <version>${miglayout.version}</version>
         </dependency>
     </dependencies>
 
