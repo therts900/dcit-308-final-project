@@ -20,7 +20,22 @@ public final class DatabaseManager implements AutoCloseable {
     }
     public Connection getConnection() throws SQLException { Connection c=DriverManager.getConnection(url); try(Statement s=c.createStatement()){s.execute("PRAGMA foreign_keys = ON");} return c; }
     public void initializeSchema(Path schema) throws SQLException, IOException {
-        String sql=Files.readString(schema); try(Connection c=getConnection(); Statement s=c.createStatement()){ for(String statement:sql.split(";")){String trimmed=statement.trim(); if(!trimmed.isEmpty()&&!trimmed.startsWith("--")) s.execute(trimmed); } }
+        String sql = Files.readString(schema);
+        // Strip full-line comments before splitting on ';'. The previous approach split on
+        // ';' first, then only skipped a chunk if the *entire* trimmed chunk started with
+        // "--". That silently dropped any statement immediately preceded by a comment with
+        // no semicolon separating them (e.g. a CREATE TABLE right after an explanatory
+        // comment block) because the comment + statement together still started with "--".
+        StringBuilder withoutComments = new StringBuilder();
+        for (String line : sql.split("\n")) {
+            if (!line.strip().startsWith("--")) withoutComments.append(line).append('\n');
+        }
+        try (Connection c = getConnection(); Statement s = c.createStatement()) {
+            for (String statement : withoutComments.toString().split(";")) {
+                String trimmed = statement.trim();
+                if (!trimmed.isEmpty()) s.execute(trimmed);
+            }
+        }
     }
     @Override public void close() { }
 }
