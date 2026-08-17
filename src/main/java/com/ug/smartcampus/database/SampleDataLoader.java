@@ -32,11 +32,12 @@ public final class SampleDataLoader {
         CampusResourceDao campusResources = new CampusResourceDao(database);
 
         // Legacy demo fixtures (small hand-written tables, kept for the original UI tabs).
-        for (String[] row : rows(dataDirectory.resolve("buildings.csv"))) {
+        for (String[] row : rowsIfPresent(dataDirectory.resolve("buildings.csv"))) {
             int id = Integer.parseInt(row[0]);
             if (buildings.findById(id).isEmpty()) buildings.create(new Building(id, row[1], Double.parseDouble(row[2]), Double.parseDouble(row[3])));
         }
-        for (String[] row : rows(dataDirectory.resolve("maintenance_requests.csv"))) {
+        Path maintenanceFile = dataDirectory.resolve(Files.exists(dataDirectory.resolve("requests.csv")) ? "requests.csv" : "maintenance_requests.csv");
+        for (String[] row : rowsIfPresent(maintenanceFile)) {
             int id = Integer.parseInt(row[0]);
             if (requests.findById(id).isEmpty()) requests.create(new Request(id, row[1], row[2], Integer.parseInt(row[3]), row[4],
                     Integer.parseInt(row[5]), LocalDateTime.parse(row[6]), row[7]));
@@ -44,7 +45,7 @@ public final class SampleDataLoader {
 
         // Real campus data model, collected for the group project.
         // locations.csv: id,name,area,location_type,x_coord,y_coord
-        for (String[] row : rows(dataDirectory.resolve("locations.csv"))) {
+        for (String[] row : rowsIfPresent(dataDirectory.resolve("locations.csv"))) {
             String id = row[0];
             if (locations.findById(id).isEmpty()) {
                 locations.create(new Location(id, row[1], row[2], row[3], Double.parseDouble(row[4]), Double.parseDouble(row[5])));
@@ -52,7 +53,7 @@ public final class SampleDataLoader {
         }
         // roads.csv: road_id,from_location_id,to_location_id,distance_km,travel_time_min,condition_weight
         // Must load after locations (FK dependency).
-        for (String[] row : rows(dataDirectory.resolve("roads.csv"))) {
+        for (String[] row : rowsIfPresent(dataDirectory.resolve("roads.csv"))) {
             String id = row[0];
             if (roads.findById(id).isEmpty()) {
                 roads.create(new Road(id, row[1], row[2], Double.parseDouble(row[3]), Double.parseDouble(row[4]), Double.parseDouble(row[5])));
@@ -60,7 +61,7 @@ public final class SampleDataLoader {
         }
         // service_requests.csv: request_id,source_location_id,destination_location_id,category,urgency,time_submitted,deadline,status
         // Must load after locations (FK dependency).
-        for (String[] row : rows(dataDirectory.resolve("service_requests.csv"))) {
+        for (String[] row : rowsIfPresent(dataDirectory.resolve("service_requests.csv"))) {
             String id = row[0];
             if (serviceRequests.findById(id).isEmpty()) {
                 serviceRequests.create(new ServiceRequest(id, row[1], row[2], row[3], Integer.parseInt(row[4]),
@@ -69,7 +70,7 @@ public final class SampleDataLoader {
         }
         // resources.csv: resource_id,resource_type,home_location_id,capacity,availability_status
         // Must load after locations (FK dependency).
-        for (String[] row : rows(dataDirectory.resolve("resources.csv"))) {
+        for (String[] row : rowsIfPresent(dataDirectory.resolve("resources.csv"))) {
             String id = row[0];
             if (campusResources.findById(id).isEmpty()) {
                 campusResources.create(new CampusResource(id, row[1], row[2], Integer.parseInt(row[3]), row[4]));
@@ -80,5 +81,9 @@ public final class SampleDataLoader {
     private static List<String[]> rows(Path csv) throws IOException {
         return Files.readAllLines(csv).stream().skip(1).filter(line -> !line.isBlank())
                 .map(line -> line.split(",", -1)).toList();
+    }
+
+    private static List<String[]> rowsIfPresent(Path csv) throws IOException {
+        return Files.exists(csv) ? rows(csv) : List.of();
     }
 }

@@ -13,6 +13,7 @@ import com.ug.smartcampus.model.Location;
 import com.ug.smartcampus.model.Road;
 import com.ug.smartcampus.model.ServiceRequest;
 import com.ug.smartcampus.service.RoutingService;
+import com.ug.smartcampus.service.NavigationService;
 import com.ug.smartcampus.service.CampusOperationsService;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
@@ -154,7 +155,7 @@ public final class SmartCampusDashboard {
         pages.add(createDataSetupPage(), "Data Setup");
         pages.add(createSchedulePage(), "Schedule");
         pages.add(createAllocationPage(), "Allocate");
-        pages.add(createRoutePage(), "Route");
+        pages.add(createNavigationRoutePage(), "Route");
         pages.add(createReportsPage(), "Reports");
         return pages;
     }
@@ -238,6 +239,50 @@ public final class SmartCampusDashboard {
         JButton route = primaryButton("Find optimized route");
         route.addActionListener(event -> { if (from.getSelectedItem() == null || to.getSelectedItem() == null) { showInfo("Load locations and select both route endpoints first."); return; } try (DatabaseManager database = new DatabaseManager()) { String start = ((LocationOption) from.getSelectedItem()).id(); String end = ((LocationOption) to.getSelectedItem()).id(); CampusOperationsService.Route calculated = new CampusOperationsService(database).route(start, end); result.setText(calculated.path().isEmpty() || Double.isInfinite(calculated.weightedTravelMinutes()) ? "No connected route was found." : "Recommended route\n\n" + String.join("  →  ", calculated.path()) + "\n\nWeighted travel time: " + String.format("%.1f", calculated.weightedTravelMinutes()) + " minutes\n\nComputed with Dijkstra over the collected road network."); } catch (Exception exception) { showError(exception); } });
         JPanel controls = new JPanel(new MigLayout("insets 0", "[][]20[][]20[]", "[]")); controls.setOpaque(false); controls.add(loadLocations); controls.add(new JLabel("From:")); controls.add(from, "w 200!"); controls.add(new JLabel("To:")); controls.add(to, "w 200!"); controls.add(route);
+        page.add(controls); page.add(new JScrollPane(result), "grow, push"); return page;
+    }
+
+    private static JPanel createNavigationRoutePage() {
+        JPanel page = createPage("Route", "Use the GeoJSON-derived pedestrian network to calculate the fastest walking route.");
+        JComboBox<NavigationService.NavigationDestination> from = new JComboBox<>();
+        JComboBox<NavigationService.NavigationDestination> to = new JComboBox<>();
+        JTextArea result = new JTextArea("Load navigation data, choose an origin and destination, then find a route.");
+        result.setEditable(false); result.setLineWrap(true); result.setWrapStyleWord(true); result.setBackground(Color.WHITE);
+        JButton load = primaryButton("Load navigation data");
+        load.addActionListener(event -> {
+            try {
+                NavigationService navigation = new NavigationService(Path.of("database/data"));
+                from.removeAllItems(); to.removeAllItems();
+                for (NavigationService.NavigationDestination destination : navigation.destinations()) {
+                    from.addItem(destination); to.addItem(destination);
+                }
+                if (to.getItemCount() > 1) to.setSelectedIndex(1);
+                result.setText("Network ready: " + navigation.nodeCount() + " nodes, " + navigation.edgeCount()
+                        + " walkable edges, and " + navigation.destinations().size() + " destinations loaded.");
+            } catch (Exception exception) { showError(exception); }
+        });
+        JButton route = primaryButton("Find optimized route");
+        route.addActionListener(event -> {
+            if (from.getSelectedItem() == null || to.getSelectedItem() == null) {
+                showInfo("Load navigation data and select both route endpoints first."); return;
+            }
+            try {
+                NavigationService navigation = new NavigationService(Path.of("database/data"));
+                NavigationService.NavigationDestination start = (NavigationService.NavigationDestination) from.getSelectedItem();
+                NavigationService.NavigationDestination end = (NavigationService.NavigationDestination) to.getSelectedItem();
+                NavigationService.Route calculated = navigation.route(start.id(), end.id());
+                result.setText(calculated.path().isEmpty() || Double.isInfinite(calculated.travelTimeMinutes())
+                        ? "No connected walking route was found."
+                        : "Recommended walking route\n\n" + start.name() + " -> " + end.name()
+                        + "\n\nGraph nodes: " + calculated.path().size()
+                        + "\nDistance: " + String.format("%.3f", calculated.distanceKm()) + " km"
+                        + "\nEstimated travel time: " + String.format("%.1f", calculated.travelTimeMinutes())
+                        + " minutes\n\nComputed with Dijkstra over the GeoJSON-derived pedestrian network.");
+            } catch (Exception exception) { showError(exception); }
+        });
+        JPanel controls = new JPanel(new MigLayout("insets 0", "[][]20[][]20[]", "[]")); controls.setOpaque(false);
+        controls.add(load); controls.add(new JLabel("From:")); controls.add(from, "w 200!");
+        controls.add(new JLabel("To:")); controls.add(to, "w 200!"); controls.add(route);
         page.add(controls); page.add(new JScrollPane(result), "grow, push"); return page;
     }
 
