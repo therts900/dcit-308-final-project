@@ -15,3 +15,11 @@ jobs:
           java-version: '17'
           cache: maven
       - run: mvn --batch-mode verify
+      - name: Upload test and coverage reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-and-coverage-reports
+          path: |
+            target/surefire-reports/
+            target/site/jacoco/

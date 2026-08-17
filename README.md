@@ -49,3 +49,45 @@ The implementation demonstrates the following campus-oriented operations:
 - Allocation algorithms: greedy priority-based resource matching and dynamic-programming knapsack selection.
 
 `SchedulingService` uses a priority queue so higher-severity requests are planned first, `RoutingService` uses Dijkstra for weighted campus routes, and `ResourceAllocationService` applies greedy matching by building. The structures and algorithms have JUnit tests under `src/test/java`.
+
+## Build and Run
+
+Install JDK 17+ and Maven, then run the complete quality gate:
+
+```bash
+mvn verify
+```
+
+`verify` runs the JUnit suite, enables Java compiler lint warnings as errors, creates the shaded executable JAR, and writes a JaCoCo HTML coverage report to `target/site/jacoco/index.html`.
+
+Load the supplied CSV fixture data once, then display the severity-ordered schedule:
+
+```bash
+java -jar target/smartcampus.jar --load-sample
+java -jar target/smartcampus.jar --schedule
+```
+
+Running the JAR with no arguments opens the Smart Campus desktop dashboard. It provides a guided, visual workflow for data loading, priority scheduling, resource allocation, shortest-route exploration, and reporting/experiment steps.
+
+The SQLite database is stored at `database/smart-campus.db`; its location can be changed in `src/main/resources/application/application.properties`. The loader is idempotent, so re-running `--load-sample` does not duplicate rows.
+
+## Persistence and Workflow
+
+`SampleDataLoader` imports buildings before resources and requests, preserving database foreign-key constraints. `PersistenceService` reads `RequestDao` and `ResourceDao` records into the lists consumed by the scheduling and allocation services. The integration test creates an isolated SQLite database, saves requests/resources, reloads them through the DAO boundary, verifies priority order, and verifies building-based allocations.
+
+```text
+CSV data -> SampleDataLoader -> SQLite / DAOs -> PersistenceService
+                                                    |            |
+                                             SchedulingService  ResourceAllocationService
+```
+
+## Performance Experiments
+
+The repeatable command-line benchmarks print CSV-compatible timing tables using seven runs and the median result:
+
+```bash
+java -cp target/smartcampus.jar com.ug.smartcampus.experiment.benchmark.SortingBenchmark
+java -cp target/smartcampus.jar com.ug.smartcampus.experiment.benchmark.GraphBenchmark
+```
+
+Sorting uses merge sort and should grow approximately `O(n log n)`. The graph test keeps a sparse connected graph with about `3V` edges and measures Dijkstra, whose expected complexity is `O(E + V log V)`. Save the output in `docs/performance-graphs/` and plot size against `median_ms` for the final submission.
