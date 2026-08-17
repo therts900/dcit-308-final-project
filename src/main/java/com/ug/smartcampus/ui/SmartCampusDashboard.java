@@ -7,9 +7,15 @@ import com.ug.smartcampus.database.dao.CampusResourceDao;
 import com.ug.smartcampus.database.dao.LocationDao;
 import com.ug.smartcampus.database.dao.RoadDao;
 import com.ug.smartcampus.database.dao.ServiceRequestDao;
+import com.ug.smartcampus.datastructures.graph.Graph;
 import com.ug.smartcampus.model.CampusResource;
+import com.ug.smartcampus.model.Location;
+import com.ug.smartcampus.model.Road;
 import com.ug.smartcampus.model.ServiceRequest;
+import com.ug.smartcampus.service.RoutingService;
+import com.ug.smartcampus.service.CampusOperationsService;
 import java.awt.BorderLayout;
+import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -21,11 +27,14 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Optional;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JComboBox;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -83,12 +92,14 @@ public final class SmartCampusDashboard {
             }
         };
         frame.setContentPane(rootGradientPanel);
-        rootGradientPanel.add(createSidebar(), BorderLayout.WEST);
-        rootGradientPanel.add(createMainContent(frame), BorderLayout.CENTER);
+        CardLayout pageLayout = new CardLayout();
+        JPanel pages = createPages(frame, pageLayout);
+        rootGradientPanel.add(createSidebar(pages, pageLayout), BorderLayout.WEST);
+        rootGradientPanel.add(pages, BorderLayout.CENTER);
         return frame;
     }
 
-    private static JPanel createSidebar() {
+    private static JPanel createSidebar(JPanel pages, CardLayout pageLayout) {
         JPanel sidebar = new JPanel(
                 new MigLayout("wrap 1, fillx, insets 30 20 20 20", "[fill]", "[]40[]10[]10[]10[]10[]"));
         sidebar.setOpaque(false);
@@ -97,21 +108,16 @@ public final class SmartCampusDashboard {
         brandLabel.setForeground(TEXT_DARK);
         brandLabel.setFont(new Font("SansSerif", Font.BOLD, 22));
         sidebar.add(brandLabel);
-        // NOTE: nav buttons are visual-only for now — Data Setup / Schedule / Allocate
-        // /
-        // Route pages in this sidebar style aren't built yet. The working logic for
-        // each
-        // (real DAOs, priority scheduling, greedy allocation, Dijkstra routing) exists
-        // in
-        // git history from the tabbed layout this replaced — port it into new page
-        // panels
-        // wired to these nav buttons as a follow-up, rather than re-deriving it.
-        sidebar.add(createNavButton("Dashboard", true));
-        sidebar.add(createNavButton("Data Setup", false));
-        sidebar.add(createNavButton("Schedule", false));
-        sidebar.add(createNavButton("Allocate", false));
-        sidebar.add(createNavButton("Route", false));
-        sidebar.add(createNavButton("Reports", false));
+        Map<String, JButton> navigation = new LinkedHashMap<>();
+        for (String page : List.of("Dashboard", "Data Setup", "Schedule", "Allocate", "Route", "Reports")) {
+            JButton button = createNavButton(page, "Dashboard".equals(page));
+            navigation.put(page, button);
+            sidebar.add(button);
+        }
+        navigation.forEach((page, button) -> button.addActionListener(event -> {
+            pageLayout.show(pages, page);
+            navigation.forEach((name, navButton) -> applyNavStyle(navButton, name.equals(page)));
+        }));
         return sidebar;
     }
 
@@ -121,17 +127,134 @@ public final class SmartCampusDashboard {
         btn.setHorizontalAlignment(SwingConstants.LEFT);
         btn.setFocusPainted(false);
         btn.setBorder(new EmptyBorder(12, 20, 12, 20));
-        if (isActive) {
-            btn.setBackground(TEAL_ACCENT);
-            btn.setForeground(Color.WHITE);
-            btn.putClientProperty("JButton.buttonType", "roundRect");
-        } else {
-            btn.setContentAreaFilled(false);
-            btn.setForeground(TEXT_MUTED);
-            btn.setBorderPainted(false);
-        }
+        applyNavStyle(btn, isActive);
         return btn;
     }
+
+    private static void applyNavStyle(JButton button, boolean isActive) {
+        if (isActive) {
+            button.setBackground(TEAL_ACCENT);
+            button.setForeground(Color.WHITE);
+            button.setContentAreaFilled(true);
+            button.setBorderPainted(true);
+            button.putClientProperty("JButton.buttonType", "roundRect");
+        } else {
+            button.setContentAreaFilled(false);
+            button.setForeground(TEXT_MUTED);
+            button.setBorderPainted(false);
+            button.putClientProperty("JButton.buttonType", null);
+        }
+        button.repaint();
+    }
+
+    private static JPanel createPages(JFrame frame, CardLayout pageLayout) {
+        JPanel pages = new JPanel(pageLayout);
+        pages.setOpaque(false);
+        pages.add(createMainContent(frame), "Dashboard");
+        pages.add(createDataSetupPage(), "Data Setup");
+        pages.add(createSchedulePage(), "Schedule");
+        pages.add(createAllocationPage(), "Allocate");
+        pages.add(createRoutePage(), "Route");
+        pages.add(createReportsPage(), "Reports");
+        return pages;
+    }
+
+    private static JPanel createPage(String title, String subtitle) {
+        JPanel page = new JPanel(new MigLayout("wrap 1, insets 40 40 40 40, fillx", "[grow, fill]", "[]25[]"));
+        page.setOpaque(false);
+        JLabel pageTitle = new JLabel(title);
+        pageTitle.setForeground(TEXT_DARK);
+        pageTitle.setFont(new Font("SansSerif", Font.BOLD, 28));
+        page.add(pageTitle);
+        JLabel subtitleLabel = new JLabel(subtitle);
+        subtitleLabel.setForeground(TEXT_MUTED);
+        subtitleLabel.setFont(new Font("SansSerif", Font.PLAIN, 14));
+        page.add(subtitleLabel, "gapy -20 10");
+        return page;
+    }
+
+    private static JPanel createDataSetupPage() {
+        JPanel page = createPage("Data Setup", "Load the supplied CSV data into the local campus database.");
+        JLabel status = new JLabel("Data has not been loaded in this session.");
+        JButton load = primaryButton("Load / refresh sample data");
+        load.addActionListener(event -> {
+            try (DatabaseManager database = new DatabaseManager()) {
+                database.initializeSchema(Path.of("database/schema.sql"));
+                SampleDataLoader.load(database, Path.of("database/data"));
+                status.setText(new LocationDao(database).findAll().size() + " locations · "
+                        + new RoadDao(database).findAll().size() + " roads · "
+                        + new CampusResourceDao(database).findAll().size() + " resources · "
+                        + new ServiceRequestDao(database).findAll().size() + " requests loaded.");
+            } catch (Exception exception) { showError(exception); }
+        });
+        JPanel card = createWhiteCard("Campus data loader", "Import the repository CSV fixtures safely; existing rows are preserved.", "Ready to load");
+        card.add(load, "gapy 18");
+        card.add(status);
+        page.add(card, "growx, h 220!");
+        return page;
+    }
+
+    private static JPanel createSchedulePage() {
+        JPanel page = createPage("Schedule", "Rank active requests by urgency, then by submitted time.");
+        DefaultTableModel model = tableModel("Order", "Request", "Category", "Urgency", "From", "To", "Status");
+        JButton run = primaryButton("Generate priority schedule");
+        run.addActionListener(event -> {
+            try (DatabaseManager database = new DatabaseManager()) {
+                List<ServiceRequest> requests = new CampusOperationsService(database).prioritySchedule();
+                model.setRowCount(0); int order = 1;
+                for (ServiceRequest r : requests) model.addRow(new Object[] { order++, r.getId(), r.getCategory(), r.getUrgency(), r.getSourceLocationId(), r.getDestinationLocationId(), r.getStatus() });
+            } catch (Exception exception) { showError(exception); }
+        });
+        page.add(createActionTable(run, model), "grow, push");
+        return page;
+    }
+
+    private static JPanel createAllocationPage() {
+        JPanel page = createPage("Allocate", "Assign available resources located at each request’s source location.");
+        DefaultTableModel model = tableModel("Request", "Urgency", "Source", "Assigned resource", "Type", "Capacity");
+        JButton run = primaryButton("Run resource allocation");
+        run.addActionListener(event -> {
+            try (DatabaseManager database = new DatabaseManager()) {
+                model.setRowCount(0);
+                for (CampusOperationsService.Allocation allocation : new CampusOperationsService(database).allocate()) {
+                    ServiceRequest request = allocation.request();
+                    CampusResource resource = allocation.resource();
+                    if (resource == null) model.addRow(new Object[] { request.getId(), request.getUrgency(), request.getSourceLocationId(), "Unassigned", "—", "—" });
+                    else model.addRow(new Object[] { request.getId(), request.getUrgency(), request.getSourceLocationId(), resource.getId(), resource.getResourceType(), resource.getCapacity() });
+                }
+            } catch (Exception exception) { showError(exception); }
+        });
+        page.add(createActionTable(run, model), "grow, push");
+        return page;
+    }
+
+    private static JPanel createRoutePage() {
+        JPanel page = createPage("Route", "Use Dijkstra’s algorithm to find the lowest travel-time path across campus roads.");
+        JComboBox<LocationOption> from = new JComboBox<>(); JComboBox<LocationOption> to = new JComboBox<>();
+        JTextArea result = new JTextArea("Load locations, choose an origin and destination, then find a route.");
+        result.setEditable(false); result.setLineWrap(true); result.setWrapStyleWord(true); result.setBackground(Color.WHITE);
+        JButton loadLocations = primaryButton("Load locations");
+        loadLocations.addActionListener(event -> { try (DatabaseManager database = new DatabaseManager()) { List<Location> locations = new CampusOperationsService(database).locations(); from.removeAllItems(); to.removeAllItems(); for (Location location : locations) { LocationOption option = new LocationOption(location.getId(), location.getName()); from.addItem(option); to.addItem(option); } if (to.getItemCount() > 1) to.setSelectedIndex(1); result.setText("Network ready: " + locations.size() + " locations loaded. Choose endpoints and calculate a Dijkstra route."); } catch (Exception exception) { showError(exception); } });
+        JButton route = primaryButton("Find optimized route");
+        route.addActionListener(event -> { if (from.getSelectedItem() == null || to.getSelectedItem() == null) { showInfo("Load locations and select both route endpoints first."); return; } try (DatabaseManager database = new DatabaseManager()) { String start = ((LocationOption) from.getSelectedItem()).id(); String end = ((LocationOption) to.getSelectedItem()).id(); CampusOperationsService.Route calculated = new CampusOperationsService(database).route(start, end); result.setText(calculated.path().isEmpty() || Double.isInfinite(calculated.weightedTravelMinutes()) ? "No connected route was found." : "Recommended route\n\n" + String.join("  →  ", calculated.path()) + "\n\nWeighted travel time: " + String.format("%.1f", calculated.weightedTravelMinutes()) + " minutes\n\nComputed with Dijkstra over the collected road network."); } catch (Exception exception) { showError(exception); } });
+        JPanel controls = new JPanel(new MigLayout("insets 0", "[][]20[][]20[]", "[]")); controls.setOpaque(false); controls.add(loadLocations); controls.add(new JLabel("From:")); controls.add(from, "w 200!"); controls.add(new JLabel("To:")); controls.add(to, "w 200!"); controls.add(route);
+        page.add(controls); page.add(new JScrollPane(result), "grow, push"); return page;
+    }
+
+    private static JPanel createReportsPage() {
+        JPanel page = createPage("Reports", "Review the current operational dataset and availability.");
+        JTextArea report = new JTextArea(); report.setEditable(false); report.setBackground(Color.WHITE);
+        JButton refresh = primaryButton("Refresh operational report");
+        refresh.addActionListener(event -> { try (DatabaseManager database = new DatabaseManager()) { CampusOperationsService operations = new CampusOperationsService(database); List<ServiceRequest> requests = operations.requests(); List<CampusResource> resources = operations.resources(); long active = operations.prioritySchedule().size(); long available = resources.stream().filter(r -> "AVAILABLE".equalsIgnoreCase(r.getAvailabilityStatus())).count(); long assigned = operations.allocate().stream().filter(a -> a.resource() != null).count(); report.setText("OPERATIONAL SUMMARY\n\nLocations: " + operations.locations().size() + "\nRoads: " + operations.roads().size() + "\nService requests: " + requests.size() + "\nActive requests: " + active + "\nResources: " + resources.size() + "\nAvailable resources: " + available + "\nGreedy allocations possible: " + assigned + "\n\nAlgorithms used\n• Binary-heap priority queue for request scheduling\n• Greedy matching for resource allocation\n• Dijkstra for weighted shortest paths"); } catch (Exception exception) { showError(exception); } });
+        page.add(refresh); page.add(new JScrollPane(report), "grow, push"); return page;
+    }
+
+    private static DefaultTableModel tableModel(String... columns) { return new DefaultTableModel(columns, 0) { @Override public boolean isCellEditable(int row, int column) { return false; } }; }
+    private static JPanel createActionTable(JButton action, DefaultTableModel model) { JPanel panel = new JPanel(new BorderLayout(12, 12)); panel.setOpaque(false); panel.add(action, BorderLayout.NORTH); JTable table = new JTable(model); table.setRowHeight(28); table.setFillsViewportHeight(true); panel.add(new JScrollPane(table), BorderLayout.CENTER); return panel; }
+    private static JButton primaryButton(String text) { JButton button = new JButton(text); button.setBackground(TEAL_ACCENT); button.setForeground(Color.WHITE); button.setFocusPainted(false); button.setBorder(new EmptyBorder(11, 16, 11, 16)); button.putClientProperty("JButton.buttonType", "roundRect"); return button; }
+    private static void showError(Exception exception) { JOptionPane.showMessageDialog(null, exception.getMessage(), "Action could not be completed", JOptionPane.ERROR_MESSAGE); }
+    private static void showInfo(String message) { JOptionPane.showMessageDialog(null, message, "Smart Campus", JOptionPane.INFORMATION_MESSAGE); }
+    private record LocationOption(String id, String name) { @Override public String toString() { return name + " (" + id + ")"; } }
 
     private static JPanel createMainContent(JFrame frame) {
         DashboardStats stats = loadStats(frame);
