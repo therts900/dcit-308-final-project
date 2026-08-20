@@ -7,7 +7,7 @@
 
 ## What the dataset contains
 
-The dataset describes a campus service-and-delivery operation over the UG Legon campus and is split across four linked files: 48 locations, 100 roads, 30 resources, and 300 service requests. All identifiers are consistent across files — every road, request, and resource references a location ID that exists in `locations.csv` — and the road network forms a single connected graph so that the routing algorithms always have a valid path.
+The dataset describes a campus service-and-delivery operation over the UG Legon campus and is split across four linked files: 50 locations, 104 roads, 30 resources, and 5,000 service requests. All identifiers are consistent across files — every road, request, and resource references a location ID that exists in `locations.csv` — and the road network forms a single connected graph so that the routing algorithms always have a valid path. (The dataset was later topped up from 48 to 50 locations — adding the Estates and Physical Development Office and the School of Engineering Sciences, each linked in by two roads to a nearby existing location — to clear the brief's minimum of 50 locations.)
 
 ## How the locations were obtained
 
