@@ -1,41 +1,27 @@
 package com.ug.smartcampus.ui;
 
-import com.formdev.flatlaf.FlatLightLaf;
-import com.ug.smartcampus.database.DatabaseManager;
-import com.ug.smartcampus.database.SampleDataLoader;
-import com.ug.smartcampus.database.dao.CampusResourceDao;
-import com.ug.smartcampus.database.dao.LocationDao;
-import com.ug.smartcampus.database.dao.RoadDao;
-import com.ug.smartcampus.database.dao.ServiceRequestDao;
-import com.ug.smartcampus.datastructures.graph.Graph;
-import com.ug.smartcampus.model.CampusResource;
-import com.ug.smartcampus.model.Location;
-import com.ug.smartcampus.model.Road;
-import com.ug.smartcampus.model.ServiceRequest;
-import com.ug.smartcampus.service.RoutingService;
-import com.ug.smartcampus.service.NavigationService;
-import com.ug.smartcampus.service.CampusOperationsService;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.GradientPaint;
 import java.awt.RenderingHints;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.List;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JComboBox;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -46,6 +32,20 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
+
+import com.formdev.flatlaf.FlatLightLaf;
+import com.ug.smartcampus.database.DatabaseManager;
+import com.ug.smartcampus.database.SampleDataLoader;
+import com.ug.smartcampus.database.dao.CampusResourceDao;
+import com.ug.smartcampus.database.dao.LocationDao;
+import com.ug.smartcampus.database.dao.RoadDao;
+import com.ug.smartcampus.database.dao.ServiceRequestDao;
+import com.ug.smartcampus.model.CampusResource;
+import com.ug.smartcampus.model.Location;
+import com.ug.smartcampus.model.ServiceRequest;
+import com.ug.smartcampus.service.CampusOperationsService;
+import com.ug.smartcampus.service.NavigationService;
+
 import net.miginfocom.swing.MigLayout;
 
 /**
@@ -312,7 +312,7 @@ public final class SmartCampusDashboard {
         JPanel headerPanel = new JPanel(new MigLayout("insets 0", "[grow][]", "[]"));
         headerPanel.setOpaque(false);
         JLabel greeting = new JLabel(
-                "<html><span style='color:#829696; font-size:12px;'>Welcome back, Godwin\uD83D\uDC4B</span><br>"
+                "<html><span style='color:#829696; font-size:12px;'>Welcome back, Jephthah\uD83D\uDC4B</span><br>"
                         + "<span style='color:#2D4A4D; font-size:28px; font-weight:bold;'>Dashboard</span></html>");
         headerPanel.add(greeting, "left");
         mainPanel.add(headerPanel, "span 3, wrap");
